@@ -1,0 +1,12 @@
+name = "getfedora"
+license = "MIT"
+licenselink = "https://github.com/relrod/fedora-websites-ng/blob/master/themes/getfedora/LICENSE"
+description = ""
+homepage = "https://getfedora.org/"
+tags = []
+features = []
+min_version = "0.41"
+
+[author]
+  name = "Fedora Project"
+  homepage = "https://getfedora.org/"

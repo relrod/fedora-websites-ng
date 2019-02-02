@@ -1,0 +1,4 @@
+baseURL = "https://getfedora.org/"
+languageCode = "en-us"
+title = "Fedora"
+theme = "getfedora"
