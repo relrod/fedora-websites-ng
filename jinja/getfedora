@@ -1,0 +1,83 @@
+#!/bin/python3
+
+import os
+import shutil
+import fnmatch
+
+from livereload import Server
+import jinja2
+import click
+
+PORT = 8000
+OUTPUT_DIR = "_output"
+STATIC_DIR = "static"
+TEMPLATES_DIR = "templates"
+SITE_DIR = "templates/site"
+PARTIALS_DIR = "templates/partials"
+TEMPLATE_EXT = "*.html"
+
+def run_webserver():
+    server = Server()
+    server.watch(STATIC_DIR, runbuild)
+    server.watch(TEMPLATES_DIR, runbuild)
+
+    server.serve(root=OUTPUT_DIR)
+
+def render():
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader('./templates/'),
+        autoescape=jinja2.select_autoescape(['html', 'xml'])
+    )
+
+    for root, dirs, files in os.walk(SITE_DIR):
+        for filename in fnmatch.filter(files, TEMPLATE_EXT):
+            templatename = os.path.join(root, filename).replace(TEMPLATES_DIR, '', 1)
+            output_dest = os.path.join(root, filename).replace(SITE_DIR,OUTPUT_DIR, 1)
+            with open(output_dest, 'w') as f:
+                html = env.get_template(templatename).render()
+                f.write(html)
+                f.close()
+            
+
+def cleanup():
+    try:
+        shutil.rmtree(OUTPUT_DIR)
+    except FileNotFoundError:
+        pass
+
+def runbuild():
+    # Recreate the layout in the templates/site directory into _output
+
+    cleanup()
+
+    def isfile(dir, files):
+        return [f for f in files if os.path.isfile(os.path.join(dir, f))]
+    shutil.copytree(SITE_DIR, OUTPUT_DIR, ignore=isfile)
+
+    #copy over the static dir into _output
+    shutil.copytree(STATIC_DIR, OUTPUT_DIR+"/"+STATIC_DIR)
+
+    render()
+
+
+@click.group()
+def cli():
+    pass
+
+@cli.command()
+def watch():
+    """Build the website and serve it for viewing in a browser"""
+    runbuild()
+    run_webserver()
+
+@cli.command()
+def build():
+    runbuild()
+
+@cli.command()
+def clean():
+    cleanup()
+
+if __name__ == '__main__':
+    cli()
+
