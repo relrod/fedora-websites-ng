@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      <meta name="theme-color" content="#3c6eb4" />
+      <meta property="og:title" content="Get Fedora" />
+      <meta property="og:url" content="http://getfedora.org" />
+      <meta property="og:image" content="https://getfedora.org/static/images/fedora.png" />
+      <meta property="og:description" content="Choose Freedom. Choose Fedora. Pick a flavor of Fedora streamlined for your needs, and get to work right away." />
+      <meta name="twitter:card" content="summary_large_image"/>
+      <meta name="twitter:site" content="@fedora"/>
+      <meta name="twitter:title" content="Choose Freedom. Choose Fedora."/>
+      <meta name="twitter:description" content="Pick a flavor of Fedora streamlined for your needs, and get to work right away."/>
+      <meta name="twitter:image" content="https://getfedora.org/static/images/fedora.png"/>
+      <link rel="shortcut icon" href="/static/images/favicon.ico" />
+      <link rel="stylesheet" media="screen" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700&amp;subset=latin,latin-ext" />
+      <link rel='stylesheet' media="screen" href='https://fonts.googleapis.com/css?family=Montserrat:400,700' />
+      <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css" />
+      <link rel="stylesheet" type="text/css" href="/static/css/app.css" />
+      <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.css" />
+      <link rel="shortcut icon" href="${path}/static/images/favicon.ico" sizes="16x16 32x32" type="image/vnd.microsoft.icon"/>
+      <title>{% block title %}{% endblock %}</title>
+    </head>
+
+    <body>
+        <div>
+            <div class="container-fluid">
+                <div class="row justify-content-end">
+                    <div class="col-auto bg-fedora-purple text-white rounded-left-1 px-3 py-1 mt-3">
+                        <a href="http://fedoramagazine.org/fedora-29-released/" class="text-white">{% trans %}Fedora 29 Released.{% endtrans %}</a> <a href="/downloads.html" class="font-weight-bold text-white">Get it now.</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-none">
+            <a class="navbar-brand" href="#"><img src="/static/images/fedora-logo.png" height="30" alt="Fedora Logo"/></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav mt-3">
+                    <li class="nav-item mx-4">
+                        <a class="nav-link" href="/">ABOUT</a>
+                    </li>
+                    <li class="nav-item dropdown mx-4">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        DOWNLOAD
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <a class="dropdown-item" href="#">Fedora Workstation</a>
+                            <a class="dropdown-item" href="#">Fedora Atomic</a>
+                            <a class="dropdown-item" href="#">Fedora Server</a>
+                            <a class="dropdown-item" href="#">Fedora IoT</a>
+                        </div>
+                    </li>
+                    <li class="nav-item mx-4">
+                        <a class="nav-link" href="https://docs.fedoraproject.org">HELP</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        </div>  
+        <div id="site-content">
+            {% block content %}{% endblock %}
+        </div>
+        <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+    </body>
+</html>

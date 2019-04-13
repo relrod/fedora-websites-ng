@@ -1,0 +1,144 @@
+#!/bin/python3
+
+import os
+import shutil
+import fnmatch
+import subprocess
+
+from babel.support import Translations
+from livereload import Server
+import jinja2
+import click
+import gettext
+
+PORT = 8000
+OUTPUT_DIR = "_output"
+STATIC_DIR = "static"
+TEMPLATES_DIR = "templates"
+SITE_DIR = os.path.join(TEMPLATES_DIR, 'site')
+PARTIALS_DIR = os.path.join(TEMPLATES_DIR, 'partials')
+TEMPLATE_EXT = "*.html"
+I18N_DIR = "i18n"
+TRANSLATIONS_POT = os.path.join(I18N_DIR, "messages.pot")
+TRANSLATIONS_DIR = os.path.join(I18N_DIR, "translations")
+TRANSLATIONS = os.listdir(TRANSLATIONS_DIR)
+BABEL_CONFIG = os.path.join(I18N_DIR, "babel.cfg")
+
+def run_webserver():
+    server = Server()
+    server.watch(STATIC_DIR, runbuild)
+    server.watch(TEMPLATES_DIR, runbuild)
+    server.serve(root=OUTPUT_DIR, port=PORT)
+
+def render():
+
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader('./'+TEMPLATES_DIR+'/'),
+        autoescape=jinja2.select_autoescape(['html', 'xml']),
+        extensions=['jinja2.ext.i18n']
+    )
+    env.install_gettext_callables(gettext.gettext, gettext.ngettext)
+
+    # compile the translations into MOs
+    subprocess.run(["pybabel", "compile", "-f", "-d", os.path.join(TRANSLATIONS_DIR)])
+
+    for lang in TRANSLATIONS:
+        translations = Translations.load(TRANSLATIONS_DIR, [lang])
+        env.install_gettext_translations(translations)
+
+        for root, dirs, files in os.walk(SITE_DIR):
+            for filename in fnmatch.filter(files, TEMPLATE_EXT):
+                templatename = os.path.join(root, filename).replace(TEMPLATES_DIR, '', 1)
+                output_dest = os.path.join(root, filename).replace(SITE_DIR,os.path.join(OUTPUT_DIR, lang), 1)
+                with open(output_dest, 'w') as f:
+                    html = env.get_template(templatename).render()
+                    f.write(html)
+                    f.close()
+            
+
+def cleanup():
+    try:
+        shutil.rmtree(OUTPUT_DIR)
+    except FileNotFoundError:
+        pass
+
+def runbuild():
+
+    def isfile(dir, files):
+        return [f for f in files if os.path.isfile(os.path.join(dir, f))]
+
+    # Remove the _output directory
+    cleanup()
+
+    # Recreate the layout in the templates/site directory into _output/lang for 
+    # each translation
+    for lang in TRANSLATIONS:
+        shutil.copytree(SITE_DIR, os.path.join(OUTPUT_DIR, lang), ignore=isfile)
+
+    # copy over the static dir into _output
+    shutil.copytree(STATIC_DIR, os.path.join(OUTPUT_DIR, STATIC_DIR))
+
+    # Render the output
+    render()
+
+
+
+@click.group()
+def cli():
+    pass
+
+@cli.command()
+def watch():
+    """Build the website and serve it for viewing in a browser"""
+    runbuild()
+    click.echo()
+    click.echo("Go to http://127.0.0.1:%s/en/ to view the website" % (PORT))
+    click.echo()
+    run_webserver()
+
+@cli.command()
+def build():
+    """Build the website into _output/"""
+    runbuild()
+
+@cli.command()
+def clean():
+    """Remove _output/ directory"""
+    cleanup()
+
+@cli.group()
+def localization():
+    pass
+
+@localization.command()
+@click.argument('lang')
+def init(lang):
+    """
+    Initialize a new language for translation
+    
+    Creates a new directory in the translations directory 
+    and creates a fresh PO file ready for translation
+    """
+    subprocess.run(["pybabel", "init", "-l", lang, "-d", TRANSLATIONS_DIR, "-i", TRANSLATIONS_POT])
+
+@localization.command()
+def extract():
+    """Extract messages from templates into POT file"""
+    subprocess.run(["pybabel", "-v", "extract", "-F", BABEL_CONFIG, "-o", TRANSLATIONS_POT, TEMPLATES_DIR])
+
+@localization.command()
+@click.argument('lang')
+def update(lang):
+    """Update PO files from the messages POT file"""
+    if lang == 'all':
+        for l in TRANSLATIONS:
+            subprocess.run(["pybabel", "update", "-l", l, "-d", TRANSLATIONS_DIR, "-i", TRANSLATIONS_POT])
+    elif lang in TRANSLATIONS:
+        subprocess.run(["pybabel", "update", "-l", lang, "-d", TRANSLATIONS_DIR, "-i", TRANSLATIONS_POT])
+    else: 
+        raise click.UsageError("lang not found in the translations directory")
+
+
+if __name__ == '__main__':
+    cli()
+
